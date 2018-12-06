@@ -4,11 +4,16 @@ const charFinder = require('./char-finder');
 const yargs = require('yargs')
   .usage('$0 <cmd> [args]')
   .command(
-    'findchar <name> [id] [status] [species] [gender]',
+    'findchar [name] [id] [status] [species] [gender]',
     'Find character given by <name>',
     (yargs) => {
       yargs.positional(
-        'id', {
+        'name', {
+          alias: 'n',
+          desc: 'The name of the character',
+          type: 'string'
+        })
+        .positional('id', {
           alias: 'i',
           desc: 'The id of the character',
           type: 'number'
@@ -20,7 +25,7 @@ const yargs = require('yargs')
           type: 'string'
         })
         .positional('species', {
-          alias: 'sp',
+          alias: 'p',
           desc: 'The species of the character',
           type: 'string'
         })
@@ -28,6 +33,16 @@ const yargs = require('yargs')
           alias: 'g',
           desc: 'The gender of the character',
           choices: ['Female', 'Male', 'Genderless', 'Unknown'],
+          type: 'string'
+        })
+        .positional('origin', {
+          alias: 'o',
+          desc: 'Name of the character\'s origin location.',
+          type: 'string'
+        })
+        .positional('location', {
+          alias: 'l',
+          desc: 'Name of the character\'s last known location endpoint.',
           type: 'string'
         });
     },
@@ -39,7 +54,11 @@ const yargs = require('yargs')
         species: argv.species,
         gender: argv.gender
       };
-      charFinder.findChar(params);
+      const additionalParams = {
+        origin: argv.origin,
+        location: argv.location
+      };
+      charFinder.findChar(params, additionalParams);
     })
   .demandCommand(1, 'You need at least one command before moving on. Type "task --help" for help')
   .help()
