@@ -18,3 +18,4 @@ function showResults (result) {
 };
 
 exports.saveResult = saveResult;
+exports.showResults = showResults;
