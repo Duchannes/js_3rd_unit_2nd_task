@@ -1,16 +1,11 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-undef */
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
+const chai = require('chai').use(require('chai-spies'));
 const fs = require('fs-extra');
 
 const resSaver = require('../result-saver');
 
-const spyConsole = require('sinon').spy(console, 'log');
-const spyResSaver = require('sinon').spy(resSaver, 'showResults');
-
 const expect = chai.expect;
-chai.use(chaiAsPromised);
 
 const posData = [{
   result: [ { test: 'test' }, { test: 'test2' }, { test: 'test3' } ],
@@ -31,15 +26,23 @@ const negData = [{
 }, {
   result: [ { test: 'test', test2: 'test2' }, { test: 'test3' } ],
   name: './././//||\\\\' // Wrong name
+}, {
+  result: [ undefined ], // Undefined result
+  name: './././//||\\\\'
 } ];
 
-beforeEach(() => {
-  fs.emptyDirSync('./result/');
-  spyConsole.resetHistory();
-  spyResSaver.resetHistory();
-});
-
 describe('result-saver', function () {
+  let spyShowResults;
+
+  beforeEach(() => {
+    fs.emptyDirSync('./result/');
+    spyShowResults = chai.spy.on(resSaver, 'showResults');
+  });
+
+  afterEach(() => {
+    chai.spy.restore(resSaver, 'showResults');
+  });
+
   describe('#saveResult()', function () {
     posData.forEach(data => {
       it('check for file existance (positive data)', function () {
@@ -70,16 +73,22 @@ describe('result-saver', function () {
     });
 
     posData.forEach(data => {
-      it('check for "found result" console output (positive data)', function () {
+      it('check for "showResult" calling (positive data)', function () {
         resSaver.saveResult(data.result, data.name);
-        expect(spyConsole.calledWith(`${data.result.length} results was found`)).to.be.equal((data.result.length >= 5));
+        expect(spyShowResults).to.be.a.spy;
+        if (data.result.length <= 5) {
+          expect(spyShowResults).to.have.been.called;
+        };
       });
     });
 
     negData.forEach(data => {
-      it('check for "found result" console output (negative data)', function () {
+      it('check for "showResult" calling (negative data)', function () {
         resSaver.saveResult(data.result, data.name);
-        expect(spyConsole.calledWith(`${data.result.length} results was found`)).to.be.equal((data.result.length >= 5));
+        expect(spyShowResults).to.be.a.spy;
+        if (data.result.length <= 5) {
+          expect(spyShowResults).to.have.been.called;
+        };
       });
     });
   });
